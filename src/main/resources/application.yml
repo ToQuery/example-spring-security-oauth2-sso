@@ -1,0 +1,33 @@
+logging:
+  level:
+    org:
+      springframework:
+        security: trace
+
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  output:
+    ansi:
+      enabled: always
+  profiles:
+    active: local
+  application:
+    name: example-spring-security-oauth2-sso
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: 326530d0c5393ec32a3c
+            clientSecret: 17d641a27de47b3fbbbddf612bc9ddcec9f2b453
+            redirectUri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - user:email
+              - read:user
+
+#      resourceserver:
+#        jwt:
+#          issuer-uri: ${app.oauth2.domain}
+
