@@ -20,8 +20,8 @@ spring:
       client:
         registration:
           github:
-            clientId: 326530d0c5393ec32a3c
-            clientSecret: 17d641a27de47b3fbbbddf612bc9ddcec9f2b453
+            clientId: xxx
+            clientSecret: xxx
             redirectUri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
               - user:email
