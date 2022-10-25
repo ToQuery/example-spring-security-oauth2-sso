@@ -2,12 +2,6 @@ package io.github.toquery.example.spring.security.oauth2.sso.core.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.AppOAuth2UserService;
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import io.github.toquery.example.spring.security.oauth2.sso.core.properties.AppProperties;
@@ -17,7 +11,6 @@ import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppLog
 import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppOAuth2AuthenticationFailureHandler;
 import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppOAuth2AuthenticationSuccessHandler;
 import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppSecurityContextRepository;
-import io.github.toquery.example.spring.security.oauth2.sso.core.token.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,13 +21,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtValidators;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -73,17 +65,6 @@ public class AppSecurityConfig {
         return new AppLogoutSuccessHandler(objectMapper);
     }
 
-
-    @Bean
-    public JwtDecoder JwtDecoder(AppProperties appProperties) {
-        // OAuth2TokenValidator<Jwt> withClockSkew = new DelegatingOAuth2TokenValidator<>(new JwtTimestampValidator());
-        return NimbusJwtDecoder.withPublicKey(appProperties.getAuth().getPublicKey())
-                .jwtProcessorCustomizer(jwtProcessor -> {
-                    JwtValidators.createDefaultWithIssuer(appProperties.getAuth().getIssuer());
-                })
-                .build();
-    }
-
     /**
      * 从request请求中那个地方获取到token
      */
@@ -117,13 +98,6 @@ public class AppSecurityConfig {
     }
 
 
-//    /**
-//     * 身份验证管理器
-//     */
-//    @Bean(BeanIds.AUTHENTICATION_MANAGER)
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-//        return authenticationConfiguration.getAuthenticationManager();
-//    }
 
     /**
      * 记录访问信息
@@ -136,10 +110,9 @@ public class AppSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           JwtDecoder jwtDecoder,
                                            CorsConfiguration corsConfiguration,
                                            BearerTokenResolver bearerTokenResolver,
-                                           AppOAuth2UserService appOAuth2UserService,
+                                           OAuth2UserService<OAuth2UserRequest, OAuth2User> appOAuth2UserService,
                                            AccessDeniedHandler accessDeniedHandler,
                                            LogoutSuccessHandler logoutSuccessHandler,
                                            AuthenticationEntryPoint authenticationEntryPoint,
@@ -186,7 +159,7 @@ public class AppSecurityConfig {
 
 
         http.oauth2Login(oauth2LoginConfigurer -> {
-             oauth2LoginConfigurer.loginPage("/oauth2/authorization/github");
+            oauth2LoginConfigurer.loginPage("/oauth2/authorization/toquery");
 
 
             oauth2LoginConfigurer.authorizationEndpoint(authorizationEndpointConfig -> {
@@ -210,9 +183,7 @@ public class AppSecurityConfig {
             auth2ResourceServerConfigurer.authenticationEntryPoint(appAuthenticationEntryPoint);
 
             auth2ResourceServerConfigurer.jwt(jwtConfigurer -> {
-                jwtConfigurer.decoder(jwtDecoder);
                 jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter);
-                jwtConfigurer.authenticationManager(new ProviderManager(new JwtAuthenticationProvider(jwtDecoder)));
 
             });
         });
@@ -232,21 +203,8 @@ public class AppSecurityConfig {
 
 
     @Bean
-    public AppOAuth2UserService appOAuth2UserService() {
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> appOAuth2UserService() {
         return new AppOAuth2UserService();
-    }
-
-    @Bean
-    public JwtEncoder jwtEncoder(AppProperties appProperties) {
-        JWK jwk = new RSAKey.Builder(appProperties.getAuth().getPublicKey()).privateKey(appProperties.getAuth().getPrivateKey()).build();
-        JWKSet jwkSet = new JWKSet(jwk);
-        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(jwkSet);
-        return new NimbusJwtEncoder(jwks);
-    }
-
-    @Bean
-    public TokenProvider tokenProvider(JwtEncoder jwtEncoder, AppProperties appProperties) {
-        return new TokenProvider(jwtEncoder, appProperties);
     }
 
     @Bean
@@ -255,9 +213,9 @@ public class AppSecurityConfig {
     }
 
     @Bean
-    public AuthenticationSuccessHandler appOAuth2AuthenticationSuccessHandler(TokenProvider tokenProvider, AppProperties appProperties,
+    public AuthenticationSuccessHandler appOAuth2AuthenticationSuccessHandler(AppProperties appProperties,
                                                                               HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository) {
-        return new AppOAuth2AuthenticationSuccessHandler(tokenProvider, appProperties, httpCookieOAuth2AuthorizationRequestRepository);
+        return new AppOAuth2AuthenticationSuccessHandler(appProperties, httpCookieOAuth2AuthorizationRequestRepository);
     }
 
     @Bean

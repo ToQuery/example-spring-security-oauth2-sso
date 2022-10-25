@@ -3,11 +3,12 @@ package io.github.toquery.example.spring.security.oauth2.sso.core.security;
 import io.github.toquery.example.spring.security.oauth2.sso.core.exception.OAuth2Exception;
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import io.github.toquery.example.spring.security.oauth2.sso.core.properties.AppProperties;
-import io.github.toquery.example.spring.security.oauth2.sso.core.token.TokenProvider;
 import io.github.toquery.example.spring.security.oauth2.sso.core.util.CookieUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -26,7 +27,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final TokenProvider tokenProvider;
 
     private final AppProperties appProperties;
 
@@ -53,13 +53,19 @@ public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticati
             throw new OAuth2Exception("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
         }
 
-        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+        // 判断类型，直接返回认证中心提供的token信息
+        if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken) {
+            String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+            DefaultOidcUser defaultOidcUser = ((DefaultOidcUser) auth2AuthenticationToken.getPrincipal());
 
-        String token = tokenProvider.createToken(authentication);
+            return UriComponentsBuilder.fromUriString(targetUrl)
+                    .queryParam("access_token", defaultOidcUser.getIdToken().getTokenValue())
+                    .build().toUriString();
+        }
 
-        return UriComponentsBuilder.fromUriString(targetUrl)
-                .queryParam("access_token", token)
-                .build().toUriString();
+        // 否则不支持其他类型的认证
+        throw new OAuth2Exception("Sorry! Unsupported Authentication Type , " + authentication.getClass().getName());
+
     }
 
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {

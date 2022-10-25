@@ -24,40 +24,7 @@ import java.util.List;
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
 
-    private AppAuthProperties auth = new AppAuthProperties();
     private AppOAuth2Properties oauth2 = new AppOAuth2Properties();
-
-    @Setter
-    @Getter
-    public static class AppAuthProperties {
-        private String issuer = "example-spring-security-oauth2-sso";
-
-        /**
-         * token 过期时间
-         */
-        private long tokenExpirationSeconds = 3600L;
-
-        private RSAPublicKey publicKey;
-
-        private RSAPrivateKey privateKey;
-
-        {
-            try {
-                publicKey = RsaKeyConverters.x509().convert(new DefaultResourceLoader().getResource(ResourceLoader.CLASSPATH_URL_PREFIX + "jwt" + File.separator + "public.pub").getInputStream());
-            } catch (IOException e) {
-                log.error("加载JWT公钥失败", e);
-                throw new RuntimeException(e);
-            }
-
-            try {
-                privateKey = RsaKeyConverters.pkcs8().convert(new DefaultResourceLoader().getResource(ResourceLoader.CLASSPATH_URL_PREFIX + "jwt" + File.separator + "private.key").getInputStream());
-            } catch (IOException e) {
-                log.error("加载JWT私钥失败", e);
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
 
     @Setter
     @Getter

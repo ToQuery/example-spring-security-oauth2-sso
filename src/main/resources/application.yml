@@ -4,6 +4,20 @@ logging:
       springframework:
         security: trace
 
+management:
+  server:
+    port: 0
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 
 spring:
   lifecycle:
@@ -14,20 +28,46 @@ spring:
   profiles:
     active: local
   application:
-    name: example-spring-security-oauth2-sso
+    name: example-spring-security-oauth2-sso-jwt
   security:
     oauth2:
       client:
         registration:
-          github:
-            clientId: xxx
-            clientSecret: xxx
-            redirectUri: "{baseUrl}/login/oauth2/code/{registrationId}"
+#          github:
+#            clientId: xxx
+#            clientSecret: xxx
+#            scope:
+#              - user:email
+#              - read:user
+          toquery:
+            provider: toquery
+            client-name: example-spring-security-oauth2-sso-jwt
+            client-id: example-spring-security-oauth2-sso-jwt
+            client-secret: example-spring-security-oauth2-sso-jwt-secret
+            client-authentication-method: basic
+            authorization-grant-type: authorization_code
+            # 本地开发环境需要指定uri，其他环境自动配置 {baseUrl}/login/oauth2/code/{registrationId}
+            redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
             scope:
-              - user:email
-              - read:user
+              - read
+              - write
+              - openid
+              - profile
+              - email
+              - address
+              - phone
+        provider:
+          toquery:
+            authorization-uri: http://127.0.0.1:8080/oauth2/authorize
+            token-uri: http://127.0.0.1:8080/oauth2/token
+            user-info-uri: http://127.0.0.1:8080/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: http://127.0.0.1:8080/oauth2/jwks
 
-#      resourceserver:
-#        jwt:
-#          issuer-uri: ${app.oauth2.domain}
+      resourceserver:
+        jwt:
+          issuer-uri: http://127.0.0.1:8080
+          # 这里只能设置 issuer-uri 并且会自动拼接请求地址（JwtDecoderProviderConfigurationUtils） , 并且会自动拉取 jwks_uri 、 issuer 等json属性
+          # 如果设置 jwk-set-uri 的话会在 OAuth2ResourceServerJwtConfiguration 自动注入时 自动注入该 JwtDecoder jwtDecoderByJwkKeySetUri() 产生问题
+          # jwk-set-uri: http://127.0.0.1:8080/oauth2/jwks
 

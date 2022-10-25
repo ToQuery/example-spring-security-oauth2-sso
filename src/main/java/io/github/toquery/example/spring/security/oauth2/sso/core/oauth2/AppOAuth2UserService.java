@@ -1,7 +1,5 @@
 package io.github.toquery.example.spring.security.oauth2.sso.core.oauth2;
 
-import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.user.OAuth2UserInfo;
-import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.user.OAuth2UserInfoFactory;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,8 +22,7 @@ public class AppOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
 
         try {
-            OAuth2UserInfo oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(oAuth2UserRequest.getClientRegistration().getRegistrationId(), oAuth2User.getAttributes());
-            return new DefaultOAuth2User(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")), oAuth2UserInfo.getAttributes(), "name");
+            return new DefaultOAuth2User(Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")), oAuth2User.getAttributes(), "name");
         } catch (AuthenticationException ex) {
             throw ex;
         } catch (Exception ex) {
