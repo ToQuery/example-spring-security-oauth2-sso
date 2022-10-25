@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Import;
 
 @Import(AppProperties.class)
 @SpringBootApplication
-public class ExampleSpringSecurityOauth2SsoApplication {
+public class ExampleSpringSecurityOauth2SsoJwtApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ExampleSpringSecurityOauth2SsoApplication.class, args);
+		SpringApplication.run(ExampleSpringSecurityOauth2SsoJwtApplication.class, args);
 	}
 
 }
