@@ -18,6 +18,9 @@ management:
     tags:
       application: ${spring.application.name}
 
+app:
+  oauth2:
+    domain: http://127.0.0.1:8080
 
 spring:
   lifecycle:
@@ -58,15 +61,15 @@ spring:
               - phone
         provider:
           toquery:
-            authorization-uri: http://127.0.0.1:8080/oauth2/authorize
-            token-uri: http://127.0.0.1:8080/oauth2/token
-            user-info-uri: http://127.0.0.1:8080/userinfo
+            authorization-uri: ${app.oauth2.domain}/oauth2/authorize
+            token-uri: ${app.oauth2.domain}/oauth2/token
+            user-info-uri: ${app.oauth2.domain}/userinfo
             user-name-attribute: sub
-            jwk-set-uri: http://127.0.0.1:8080/oauth2/jwks
+            jwk-set-uri: ${app.oauth2.domain}/oauth2/jwks
 
       resourceserver:
         jwt:
-          issuer-uri: http://127.0.0.1:8080
+          issuer-uri: ${app.oauth2.domain}
           # 这里只能设置 issuer-uri 并且会自动拼接请求地址（JwtDecoderProviderConfigurationUtils） , 并且会自动拉取 jwks_uri 、 issuer 等json属性
           # 如果设置 jwk-set-uri 的话会在 OAuth2ResourceServerJwtConfiguration 自动注入时 自动注入该 JwtDecoder jwtDecoderByJwkKeySetUri() 产生问题
           # jwk-set-uri: http://127.0.0.1:8080/oauth2/jwks

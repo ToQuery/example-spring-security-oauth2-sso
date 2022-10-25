@@ -30,7 +30,7 @@ public class AppProperties {
     @Getter
     public static final class AppOAuth2Properties {
         /**
-         * SSO系统地址，可不配
+         * SSO系统地址
          */
         private String domain;
 
