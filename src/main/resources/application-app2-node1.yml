@@ -1,0 +1,12 @@
+server:
+  port: 8011
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          toquery:
+            client-name: example-spring-security-oauth2-sso-jwt-2
+            client-id: example-spring-security-oauth2-sso-jwt-2
+            client-secret: example-spring-security-oauth2-sso-jwt-2-secret

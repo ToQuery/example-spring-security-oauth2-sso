@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ExampleSpringSecurityOauth2SsoApplication[dev2]" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <option name="ACTIVE_PROFILES" value="dev2" />
+  <configuration default="false" name="ExampleSpringSecurityOauth2SsoJwtApplication[app2-node2]" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" value="app2-node2" />
     <module name="example-spring-security-oauth2-sso-jwt" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="io.github.toquery.example.spring.security.oauth2.sso.ExampleSpringSecurityOauth2SsoJwtApplication" />
     <method v="2">

@@ -3,6 +3,7 @@ package io.github.toquery.example.spring.security.oauth2.sso.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.AppOAuth2UserService;
+import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.AppOidcUserService;
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import io.github.toquery.example.spring.security.oauth2.sso.core.properties.AppProperties;
 import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppAccessDeniedHandler;
@@ -21,10 +22,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -112,6 +115,7 @@ public class AppSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            CorsConfiguration corsConfiguration,
                                            BearerTokenResolver bearerTokenResolver,
+                                           OAuth2UserService<OidcUserRequest, OidcUser> appOidcUserService,
                                            OAuth2UserService<OAuth2UserRequest, OAuth2User> appOAuth2UserService,
                                            AccessDeniedHandler accessDeniedHandler,
                                            LogoutSuccessHandler logoutSuccessHandler,
@@ -168,6 +172,7 @@ public class AppSecurityConfig {
 
             oauth2LoginConfigurer.userInfoEndpoint(userInfoEndpointConfig -> {
                 userInfoEndpointConfig.userService(appOAuth2UserService);
+                userInfoEndpointConfig.oidcUserService(appOidcUserService);
             });
 
             oauth2LoginConfigurer.successHandler(appOAuth2AuthenticationSuccessHandler);
@@ -206,6 +211,12 @@ public class AppSecurityConfig {
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> appOAuth2UserService() {
         return new AppOAuth2UserService();
     }
+
+    @Bean
+    public OAuth2UserService<OidcUserRequest, OidcUser> appOidcUserService() {
+        return new AppOidcUserService();
+    }
+
 
     @Bean
     public HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository() {
