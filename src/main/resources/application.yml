@@ -1,8 +1,10 @@
 logging:
   level:
-    org:
-      springframework:
-        security: trace
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: trace
+#    org.springframework.security.oauth2: trace
+#    org.springframework.boot.autoconfigure: DEBUG
 
 
 management:
@@ -38,7 +40,7 @@ management:
 
 app:
   oauth2:
-    domain: http://127.0.0.1:8080
+    domain: http://127.0.0.1:9000
 
 spring:
   lifecycle:
@@ -62,7 +64,7 @@ spring:
 #              - read:user
           toquery:
             provider: toquery
-            client-name: example-spring-security-oauth2-sso-jwt
+            client-name: toquery
             client-id: example-spring-security-oauth2-sso-jwt
             client-secret: example-spring-security-oauth2-sso-jwt-secret
             client-authentication-method: basic
@@ -72,7 +74,7 @@ spring:
             scope:
               - read
               - write
-              - openid
+#              - openid
               - profile
               - email
               - address
@@ -87,8 +89,8 @@ spring:
 
       resourceserver:
         jwt:
-          issuer-uri: ${app.oauth2.domain}
+          # issuer-uri: ${app.oauth2.domain}
           # 这里只能设置 issuer-uri 并且会自动拼接请求地址（JwtDecoderProviderConfigurationUtils） , 并且会自动拉取 jwks_uri 、 issuer 等json属性
           # 如果设置 jwk-set-uri 的话会在 OAuth2ResourceServerJwtConfiguration 自动注入时 自动注入该 JwtDecoder jwtDecoderByJwkKeySetUri() 产生问题
-          # jwk-set-uri: http://127.0.0.1:8080/oauth2/jwks
+          jwk-set-uri: ${app.oauth2.domain}/oauth2/jwks
 

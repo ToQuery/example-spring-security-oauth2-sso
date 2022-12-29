@@ -150,9 +150,6 @@ public class AppSecurityConfig {
                             "/favicon.ico", "/**/*.png", "/**/*.gif", "/**/*.svg", "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js")
                     .permitAll();
 
-//            authorizeHttpRequestsCustomizer
-//                    .antMatchers("/auth/**", "/oauth2/**")
-//                    .permitAll();
 
             authorizeHttpRequestsCustomizer.anyRequest().authenticated();
         });
