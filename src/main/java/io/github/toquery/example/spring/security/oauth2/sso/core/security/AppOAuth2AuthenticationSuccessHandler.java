@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
@@ -70,9 +71,9 @@ public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticati
         if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken){
             OAuth2User auth2User = auth2AuthenticationToken.getPrincipal();
 
-//            JwtEncoderParameters jwtEncoderParameters =  JwtEncoderParameters.from(JwsHeader.with(SignatureAlgorithm.RS256), JwtClaimsSet.builder().claims());
-//            jwtEncoder.encode()
-
+            if (auth2User instanceof OidcUser oidcUser) {
+                accessToken = oidcUser.getIdToken().getTokenValue();
+            }
 
         }else {
             // 否则不支持其他类型的认证

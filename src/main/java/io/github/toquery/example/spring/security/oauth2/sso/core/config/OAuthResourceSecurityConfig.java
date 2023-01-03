@@ -69,6 +69,10 @@ public class OAuthResourceSecurityConfig {
                                            JwtAuthenticationConverter jwtAuthenticationConverter
     ) throws Exception {
 
+        http.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
+            authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/*").authenticated();
+        });
+
         //
         http.oauth2ResourceServer(auth2ResourceServerConfigurer -> {
             // 处理 bearerToken方式，允许接受header、param、body的参数

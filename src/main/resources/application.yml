@@ -8,9 +8,6 @@ logging:
 
 
 management:
-  server:
-    port: 8081
-
   endpoints:
     web:
       exposure:
@@ -70,12 +67,11 @@ spring:
             client-secret: example-spring-security-oauth2-sso-jwt-secret
             client-authentication-method: client_secret_basic
             authorization-grant-type: authorization_code
-            # 本地开发环境需要指定uri，其他环境自动配置 {baseUrl}/login/oauth2/code/{registrationId}
             redirect-uri: '{baseUrl}/login/oauth2/code/{registrationId}'
             scope:
               - read
               - write
-#              - openid
+              - openid
               - profile
               - email
               - address

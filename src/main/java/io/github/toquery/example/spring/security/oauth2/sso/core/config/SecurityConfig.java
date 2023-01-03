@@ -81,12 +81,9 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(authorizeHttpRequestsCustomizer -> {
             // 白名单
-            authorizeHttpRequestsCustomizer
-                    .requestMatchers(
-                            "/actuator", "/actuator/*",
-                            "/", "/error",
-                            "/favicon.ico", "/*/*.png", "/*/*.gif", "/*/*.svg", "/*/*.jpg", "/*/*.html", "/*/*.css", "/*/*.js")
-                    .permitAll();
+            authorizeHttpRequestsCustomizer.requestMatchers("/actuator", "/actuator/*").permitAll();
+            authorizeHttpRequestsCustomizer.requestMatchers("/", "/error").permitAll();
+            authorizeHttpRequestsCustomizer.requestMatchers("/favicon.ico", "/*/*.png", "/*/*.gif", "/*/*.svg", "/*/*.jpg", "/*/*.html", "/*/*.css", "/*/*.js").permitAll();
 
             authorizeHttpRequestsCustomizer.anyRequest().authenticated();
         });
