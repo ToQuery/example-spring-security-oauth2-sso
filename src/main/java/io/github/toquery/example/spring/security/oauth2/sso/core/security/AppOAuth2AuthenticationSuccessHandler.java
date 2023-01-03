@@ -9,6 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -29,6 +37,8 @@ public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticati
 
 
     private final AppProperties appProperties;
+
+//    private final JwtEncoder jwtEncoder;
 
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
@@ -53,19 +63,27 @@ public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticati
             throw new OAuth2Exception("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
         }
 
+        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+        String accessToken = "";
+
         // 判断类型，直接返回认证中心提供的token信息
-        if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken) {
-            String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-            DefaultOidcUser defaultOidcUser = ((DefaultOidcUser) auth2AuthenticationToken.getPrincipal());
+        if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken){
+            OAuth2User auth2User = auth2AuthenticationToken.getPrincipal();
 
-            return UriComponentsBuilder.fromUriString(targetUrl)
-                    .queryParam("access_token", defaultOidcUser.getIdToken().getTokenValue())
-                    .build().toUriString();
+//            JwtEncoderParameters jwtEncoderParameters =  JwtEncoderParameters.from(JwsHeader.with(SignatureAlgorithm.RS256), JwtClaimsSet.builder().claims());
+//            jwtEncoder.encode()
+
+
+        }else {
+            // 否则不支持其他类型的认证
+            throw new OAuth2Exception("Sorry! Unsupported Authentication Type , " + authentication.getClass().getName());
+
         }
-
-        // 否则不支持其他类型的认证
-        throw new OAuth2Exception("Sorry! Unsupported Authentication Type , " + authentication.getClass().getName());
-
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(targetUrl);
+        if (accessToken != null && !"".equalsIgnoreCase(accessToken)){
+            uriComponentsBuilder.queryParam("access_token", accessToken);
+        }
+        return uriComponentsBuilder.build().toUriString();
     }
 
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
