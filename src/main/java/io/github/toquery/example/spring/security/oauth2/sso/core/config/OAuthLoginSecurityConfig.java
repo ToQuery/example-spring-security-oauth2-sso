@@ -1,8 +1,8 @@
 package io.github.toquery.example.spring.security.oauth2.sso.core.config;
 
 
-import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.AppOAuth2UserService;
-import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.AppOidcUserService;
+import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.user.AppOAuth2UserService;
+import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.user.AppOidcUserService;
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import io.github.toquery.example.spring.security.oauth2.sso.core.properties.AppProperties;
 import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppOAuth2AuthenticationFailureHandler;

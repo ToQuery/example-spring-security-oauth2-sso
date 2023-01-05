@@ -26,9 +26,8 @@ public class AdminTestController {
     @GetMapping(value = {"", "/", "/info", "/index"})
     public Map<String, Object> index(
             Authentication authentication,
-            @AuthenticationPrincipal OAuth2User oauth2User,
-            @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient
+            @AuthenticationPrincipal OAuth2User oauth2User
     ) {
-        return AuthenticationUtils.authenticationInfo(this.getClass().getSimpleName(), authentication, oauth2User, authorizedClient);
+        return AuthenticationUtils.authenticationInfo(this.getClass().getSimpleName(), authentication, oauth2User, null);
     }
 }

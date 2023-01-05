@@ -1,4 +1,4 @@
-package io.github.toquery.example.spring.security.oauth2.sso.core.oauth2;
+package io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.user;
 
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;

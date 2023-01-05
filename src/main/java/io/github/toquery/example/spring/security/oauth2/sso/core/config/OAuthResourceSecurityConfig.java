@@ -2,12 +2,21 @@ package io.github.toquery.example.spring.security.oauth2.sso.core.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
+import com.nimbusds.jose.jwk.source.JWKSetCache;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.proc.SecurityContext;
 import io.github.toquery.example.spring.security.oauth2.sso.core.security.AppAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
@@ -15,6 +24,8 @@ import org.springframework.security.oauth2.server.resource.web.DefaultBearerToke
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+
+import java.net.URL;
 
 /**
  *
@@ -63,15 +74,15 @@ public class OAuthResourceSecurityConfig {
 
     @Bean
     public SecurityFilterChain oauth2ResourceServerSecurityFilterChain(HttpSecurity http,
-                                           BearerTokenResolver bearerTokenResolver,
-                                           AccessDeniedHandler accessDeniedHandler,
-                                           AuthenticationEntryPoint appAuthenticationEntryPoint,
-                                           JwtAuthenticationConverter jwtAuthenticationConverter
+                                                                       BearerTokenResolver bearerTokenResolver,
+                                                                       AccessDeniedHandler accessDeniedHandler,
+                                                                       AuthenticationEntryPoint appAuthenticationEntryPoint,
+                                                                       JwtAuthenticationConverter jwtAuthenticationConverter
     ) throws Exception {
 
-        http.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
-            authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/*").authenticated();
-        });
+//        http.authorizeHttpRequests(authorizationManagerRequestMatcherRegistry -> {
+//            authorizationManagerRequestMatcherRegistry.requestMatchers("/admin/*").authenticated();
+//        });
 
         //
         http.oauth2ResourceServer(auth2ResourceServerConfigurer -> {
@@ -90,5 +101,32 @@ public class OAuthResourceSecurityConfig {
         return http.build();
     }
 
+    @SneakyThrows
+    @Bean
+    public JWKSource<SecurityContext> jwkSource(OAuth2ResourceServerProperties auth2ResourceServerProperties) {
+        String jwkSetUri = auth2ResourceServerProperties.getJwt().getJwkSetUri();
+        if (jwkSetUri == null || jwkSetUri.isEmpty()) {
+            jwkSetUri = auth2ResourceServerProperties.getJwt().getIssuerUri() + "/oauth2/jwks";
+        }
+        URL jwksUrl = new URL(jwkSetUri);
+        JWKSetCache jwkSetCache = new DefaultJWKSetCache();
+        return new RemoteJWKSet<>(jwksUrl, null, jwkSetCache);
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+        return new NimbusJwtEncoder(jwkSource);
+    }
+
+//    @SneakyThrows
+//    @Bean
+//    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+//        JWSKeySelector<SecurityContext> jwsKeySelector = JWSAlgorithmFamilyJWSKeySelector.fromJWKSource(jwkSource);
+//
+//        DefaultJWTProcessor<SecurityContext> jwtProcessor = new DefaultJWTProcessor<>();
+//        jwtProcessor.setJWSKeySelector(jwsKeySelector);
+//
+//        return new NimbusJwtDecoder(jwtProcessor);
+//    }
 
 }
