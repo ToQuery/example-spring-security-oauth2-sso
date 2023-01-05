@@ -4,27 +4,18 @@ import io.github.toquery.example.spring.security.oauth2.sso.core.exception.OAuth
 import io.github.toquery.example.spring.security.oauth2.sso.core.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import io.github.toquery.example.spring.security.oauth2.sso.core.properties.AppProperties;
 import io.github.toquery.example.spring.security.oauth2.sso.core.util.CookieUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.JwsHeader;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
@@ -39,7 +30,6 @@ public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticati
 
     private final AppProperties appProperties;
 
-//    private final JwtEncoder jwtEncoder;
 
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
@@ -65,23 +55,43 @@ public class AppOAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticati
         }
 
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-        String accessToken = "";
+
+//        现使用SSO发放的 IdToken ， 不需要自己生成
+//        NimbusJwtClientAuthenticationParametersConverter<> nimbusJwtClientAuthenticationParametersConverter = new NimbusJwtClientAuthenticationParametersConverter<>();
+//        JwsHeader jwsHeader = JwsHeader.with(SignatureAlgorithm.RS256).build();
+//
+//        Instant issuedAt = Instant.now();
+//        Instant expiresAt = issuedAt.plus(Duration.ofHours(6));
+//
+//        JwtClaimsSet claimsBuilder = JwtClaimsSet.builder()
+//                .issuer(clientRegistration.getClientId())
+//                .subject(clientRegistration.getClientId())
+//                .audience(Collections.singletonList(clientRegistration.getProviderDetails().getTokenUri()))
+//                .id(UUID.randomUUID().toString())
+//                .claim("roles", List.of("admin"))
+//                .claim("mc", List.of("messages", "stores"))
+//                .issuedAt(issuedAt)
+//                .notBefore(issuedAt)
+//                .expiresAt(expiresAt)
+//                .build();
+//
+//        Jwt jws = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claimsBuilder));
+
+        String accessToken = ""; // jws.getTokenValue();
 
         // 判断类型，直接返回认证中心提供的token信息
-        if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken){
-            OAuth2User auth2User = auth2AuthenticationToken.getPrincipal();
-
-            if (auth2User instanceof OidcUser oidcUser) {
-                accessToken = oidcUser.getIdToken().getTokenValue();
-            }
-
-        }else {
+        if (authentication instanceof OAuth2AuthenticationToken auth2AuthenticationToken && auth2AuthenticationToken.getPrincipal() instanceof OidcUser oidcUser) {
+            accessToken = oidcUser.getIdToken().getTokenValue();
+        } else {
             // 否则不支持其他类型的认证
-            throw new OAuth2Exception("Sorry! Unsupported Authentication Type , " + authentication.getClass().getName());
-
+            throw new OAuth2Exception("Sorry! Unsupported Authentication Type " + authentication.getClass().getName() + " , Principal Type" + authentication.getPrincipal().getClass());
         }
+
+        Cookie accessTokenCookie = new Cookie("ACCESS_TOKEN", accessToken);
+        response.addCookie(accessTokenCookie);
+
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUriString(targetUrl);
-        if (accessToken != null && !"".equalsIgnoreCase(accessToken)){
+        if (accessToken != null && !"".equalsIgnoreCase(accessToken)) {
             uriComponentsBuilder.queryParam("access_token", accessToken);
         }
         return uriComponentsBuilder.build().toUriString();

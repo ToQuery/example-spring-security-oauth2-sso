@@ -21,7 +21,7 @@ public class AppSecurityContextRepository implements SecurityContextRepository {
 
     @Override
     public SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder) {
-        log.info("AppSecurityContextRepository saveContext");
+        log.info("AppSecurityContextRepository loadContext");
         SecurityContext context = (SecurityContext) requestResponseHolder.getRequest().getAttribute(RequestAttributeSecurityContextRepository.DEFAULT_REQUEST_ATTR_NAME);
         return (context != null) ? context : SecurityContextHolder.createEmptyContext();
     }
