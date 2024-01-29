@@ -8,7 +8,7 @@ spring:
       client:
         registration:
           toquery:
-            client-name: example-spring-security-oauth2-sso-jwt-2
-            client-id: example-spring-security-oauth2-sso-jwt-2
-            client-secret: example-spring-security-oauth2-sso-jwt-2-secret
+            client-name: example-spring-security-oauth2-jwt-2
+            client-id: example-spring-security-oauth2-jwt-2
+            client-secret: example-spring-security-oauth2-jwt-2-secret
 

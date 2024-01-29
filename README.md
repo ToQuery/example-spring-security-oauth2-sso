@@ -1,6 +1,6 @@
-# example-spring-security-oauth2-sso
+# example-spring-security-oauth2
 
-http://spring-security-oauth2-sso-jwt.toquery-example.com:8010/oauth2/authorization/toquery
+http://spring-security-oauth2-jwt.toquery-example.com:8010/oauth2/authorization/toquery
 
 Spring Security OAuth2方式SSO登录
 
